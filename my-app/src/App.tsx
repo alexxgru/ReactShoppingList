@@ -10,18 +10,26 @@ function FilterableProductTable({ prods }: { prods: Product[] }) {
 
   return (
   <div>
-    <SearchBar></SearchBar>
-    <ProductTable prods={prods}></ ProductTable>
+    <SearchBar 
+    filterText={filterText} 
+    inStockOnly={inStockOnly}
+    onFilterTextChange={setFilterText}
+    onInStockOnlyChange={setInStockOnly}></SearchBar>
+    <ProductTable
+    prods={prods}
+    filterText={filterText}
+    inStockOnly={inStockOnly}
+    ></ ProductTable>
   </div>
   );
 }
 
-function SearchBar() {
+function SearchBar( {filterText, inStockOnly, onFilterTextChange, onInStockOnlyChange} : {filterText: string, inStockOnly: boolean, onFilterTextChange : React.Dispatch<React.SetStateAction<string>>, onInStockOnlyChange : React.Dispatch<React.SetStateAction<boolean>>}) {
   return(
     <form>
-      <input type="text" placeholder='Search'/>
+      <input type="text" placeholder='Search' value={filterText} onChange={(e) => onFilterTextChange(e.target.value)}/>
       <label>
-        <input type="checkbox" />
+        <input type="checkbox" checked={inStockOnly} onChange={(e) => onInStockOnlyChange(e.target.checked)}/>
         {' '}
         Only show products in stock
       </label>
@@ -53,11 +61,17 @@ function ProductRow( { product } :{product : Product} ) {
   );
 }
 
-function ProductTable({ prods }: { prods: Product[] }) {
+function ProductTable({ prods, filterText, inStockOnly }: { prods: Product[], filterText: string, inStockOnly: boolean }) {
   let lastCategory: string = ""
   let rows:JSX.Element[] = []
 
   prods.forEach((prod: Product)=> {
+    if (prod.name.toLowerCase().indexOf(filterText.toLowerCase()) === -1){
+      return
+    }
+    if (inStockOnly && !prod.stocked){
+      return
+    }
     if (prod.category !== lastCategory) {
       rows.push(
         <ProductCategoryRow category={prod.category} key={prod.category}></ProductCategoryRow>
